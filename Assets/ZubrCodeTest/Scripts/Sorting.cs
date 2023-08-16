@@ -19,7 +19,7 @@ public class Sorting : MonoBehaviour
     //list to hold all the names
     public List<Person> allNamesList = new List<Person>();
 
-    //struct to separate fist and last names, but also keep them grouped together as part of a person object
+    //struct to separate first and last names, but also keep them grouped together as part of a person object
     public struct Person
     {
         public string FirstName;
@@ -34,8 +34,8 @@ public class Sorting : MonoBehaviour
             //assign the first part to FirstName
             FirstName = parts[0];
 
-            //assign second part to LastName
-            LastName = parts[1];
+            //check to ensure there's a second part for LastName, otherwise default to an empty string
+            LastName = parts.Length > 1 ? parts[1] : "";
         }
 
         //override ToString to display person as "FirstName LastName" when printed, otherwise it would just say "Sorting+Person"
@@ -51,12 +51,12 @@ public class Sorting : MonoBehaviour
         CollectNamesUsingReflection();
     }
 
-    /// <summary>
-    /// This method uses reflection to collect all string fields into a list. 
-    /// The choice to use reflection, instead of directly creating a list from the strings 
-    /// was made as an exercise to learn about reflection and out of curiosity of the possibility 
-    /// of automating the process without manually entering the names again.
-    /// </summary>
+    ///<summary>
+    ///This method uses reflection to collect all string fields into a list. 
+    ///The choice to use reflection, instead of directly creating a list from the strings 
+    ///was made as an exercise to learn about reflection and out of curiosity of the possibility 
+    ///of automating the process without manually entering the names again.
+    ///</summary>
     
     private void CollectNamesUsingReflection()
     {
