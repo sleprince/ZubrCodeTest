@@ -18,14 +18,12 @@ public class PlaceObject : MonoBehaviour
     [SerializeField] private GameObject objectPrefab; //will attach cube here in editor
 
     private ARRaycastManager rayManager;
-    //private ARPlaneManager planeManager;
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
     //above, initialise a new list to store all the raycast hits
 
     private void Awake()
     {
         rayManager = GetComponent<ARRaycastManager>();
-        //planeManager = GetComponent<ARPlaneManager>();
     }
 
     private void OnEnable()
@@ -48,39 +46,37 @@ public class PlaceObject : MonoBehaviour
 
     private void FingerDown(EnhancedTouch.Finger finger) //info to do with the finger press passed in
     {
-        if (finger.index != 0) //0 is the first in the index, so if using more than 1 finger
-            //then don't do anything
-            return;
-        else
-        {
+        //if (finger.index != 0) //0 is the first in the index, so if using more than 1 finger
+            //then don't do anything, not necessarily needed in the end
+            //return;
+        //else
+        //{
             HandleRaycast(finger);
 
-        }
+       // }
 
     }
 
     private void HandleRaycast(EnhancedTouch.Finger finger)
     {
+
         //similar to raycast functionity but optimised for AR, raycast takes in screen postion of where pressed,
         //adds list of hits to list initialised earlier, what we want to detect against (in this case plane
         //within polygon, as the plane object = polygon)
         //the other TrackableType possibilities: https://docs.unity3d.com/2018.3/Documentation/ScriptReference/Experimental.XR.TrackableType.html
 
+
         if (rayManager.Raycast(screenPoint: finger.currentTouch.screenPosition,
-            hitResults: hits, trackableTypes: TrackableType.PlaneWithinPolygon))
+             hitResults: hits, trackableTypes: TrackableType.PlaneWithinPolygon))
         {
-            foreach (ARRaycastHit hit in hits)
-            {
-                //for each hit we want to create a pose object from the hit.pose data which determines
-                //position and orientation of whatever we hit on the plane
-                Pose pose = hit.pose;
+            //for the first hit we want to create a pose object from the hit.pose data which determines
+            //position and orientation of whatever we hit on the plane
+            Pose pose = hits[0].pose;
 
-                //instantiate a new cube from prefab at the location and rotation of object for correct normals
-                GameObject obj = Instantiate(original: objectPrefab, position:
-                    pose.position, rotation: pose.rotation);
-            }
-
+            //instantiate a new cube from prefab at the location and rotation of object for correct normals
+            Instantiate(objectPrefab, pose.position, pose.rotation);
         }
+
     }
 
 
