@@ -1,4 +1,5 @@
 using System.Collections.Generic; //needed to use lists
+using TMPro;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation; //this and below needed for AR functionality
 using UnityEngine.XR.ARSubsystems;
@@ -20,6 +21,12 @@ public class PlaceObject : MonoBehaviour
     private ARRaycastManager rayManager;
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
     //above, initialise a new list to store all the raycast hits
+
+    private GameObject lastSelectedObject = null;  // to keep track of the last selected object
+    [SerializeField] private TextMeshProUGUI debugText;
+
+    [SerializeField] private Camera arCamera; //very important
+
 
     private void Awake()
     {
@@ -46,16 +53,24 @@ public class PlaceObject : MonoBehaviour
 
     private void FingerDown(EnhancedTouch.Finger finger) //info to do with the finger press passed in
     {
+        /*
         //if (finger.index != 0) //0 is the first in the index, so if using more than 1 finger
-            //then don't do anything, not necessarily needed in the end
-            //return;
-        //else
-        //{
-            HandleRaycast(finger);
+        //then don't do anything, not necessarily needed in the end
 
-       // }
+        return;
+        else
+        {
+        HandleRaycast(finger);
+
+         }
+        */
+
+        HandleRaycast(finger);
 
     }
+
+
+
 
     private void HandleRaycast(EnhancedTouch.Finger finger)
     {
@@ -73,13 +88,31 @@ public class PlaceObject : MonoBehaviour
             //position and orientation of whatever we hit on the plane
             Pose pose = hits[0].pose;
 
+
+            // Perform a regular Physics.Raycast from camera to the hit position to check for other objects.
+            Ray ray = arCamera.ScreenPointToRay(finger.currentTouch.screenPosition);
+            RaycastHit hitInfo;
+
+            if (Physics.Raycast(ray, out hitInfo))
+            {
+                if (hitInfo.transform.CompareTag("Cube"))
+                {
+
+                    debugText.text = "Hit: " + hitInfo.transform.name;
+
+                    if (lastSelectedObject != null)
+                    {
+                        lastSelectedObject.GetComponent<Renderer>().material.color = Color.white;
+                    }
+                    hitInfo.transform.gameObject.GetComponent<Renderer>().material.color = Color.green;
+                    lastSelectedObject = hitInfo.transform.gameObject;
+                    return; // Exit the function since you found a cube.
+                }
+            }
+
+            // If you didn't hit a cube but an AR Plane, instantiate a new object.
             //instantiate a new cube from prefab at the location and rotation of object for correct normals
             Instantiate(objectPrefab, pose.position, pose.rotation);
         }
-
     }
-
-
-
-
 }
