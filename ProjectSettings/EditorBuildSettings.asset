@@ -5,9 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/ZubrCodeTest/Scenes/AR.unity
-    guid: 6bdce89659816455b9f906fc62d19910
   - enabled: 1
     path: Assets/ZubrCodeTest/Scenes/AR.unity
     guid: af8d5f431da9afa47841db7ec7b95dfc
