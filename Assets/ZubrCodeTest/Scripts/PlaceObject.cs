@@ -61,23 +61,26 @@ public class PlaceObject : MonoBehaviour
         //check for single touch for dragging
         if (EnhancedTouch.Touch.activeFingers.Count == 1)
         {
-            //get the details of the current touch event for the active finger, store this in local var touch
+            //get the details of the current touch event for the 1 active finger, store this in local var touch
             var touch = EnhancedTouch.Touch.activeFingers[0].currentTouch;
 
-            //check that a cube is selected, the touch movement is ongoing, and we have a valid object reference for last selected cube
+            //check that a cube is selected, the touch movement is ongoing, not ended, and we have a valid object reference for last selected cube
             if (isCubeSelected && touch.phase == UnityEngine.InputSystem.TouchPhase.Moved && lastSelectedObject != null)
             {
-                //check if a special AR ray hits any AR planes (it uses the screen position of the touch and stores any hit results in the 'hits' list)
+                //check if our special AR ray hits any AR planes, it uses the screen position of the touch and stores any hit results in the 'hits' list made earlier
+                //this is to only move the cube within the confines of AR planes
                 if (rayManager.Raycast(touch.screenPosition, hits, TrackableType.PlaneWithinPolygon))
                 {
-                    //if a hit was found, take the position (pose) of the first hit
+                    //display the name of the hit object in the debug text
+                    debugText.text = "Hit: " + hits[0];
+                    //if a hit was found, take the position/pose of the first hit
                     Pose hitPose = hits[0].pose;
                     //moves the last selected cube to this new position while finger still not lifted off screen
                     lastSelectedObject.transform.position = hitPose.position;
                 }
             }
 
-            //check if the current touch phase is ended (i.e., finger lifted off the screen)
+            //check if the current touch phase is ended/finger lifted off the screen
             if (touch.phase == UnityEngine.InputSystem.TouchPhase.Ended)
             {
                 //reset the cube selection flag since the touch ended
@@ -85,12 +88,11 @@ public class PlaceObject : MonoBehaviour
             }
         }
 
-        //check if two fingers are touching the screen
+        //check if 2 fingers are touching the screen at once/pinch gesture
         else if (EnhancedTouch.Touch.activeFingers.Count == 2)
         {
-            //get the details of the current touch event for the first active finger
+            //get the details of the current touch event for the first and second active fingers, store in local vars
             var touch0 = EnhancedTouch.Touch.activeFingers[0].currentTouch;
-            //get the details of the current touch event for the second active finger
             var touch1 = EnhancedTouch.Touch.activeFingers[1].currentTouch;
 
             //check if this is the start of the pinch gesture by confirming no previous distance is recorded
@@ -98,24 +100,24 @@ public class PlaceObject : MonoBehaviour
             {
                 //calculate the distance between the two touches in screen space
                 previousDistance = touch1.screenPosition - touch0.screenPosition;
-                //store the magnitude (length) of this distance as the starting pinch distance
+                //store the magnitude/length of this distance as the starting pinch distance
                 previousPinchDistance = previousDistance.magnitude;
             }
-            else
+            else //it is not the start of the pinch gesture
             {
                 //calculate the current distance between the two touches in screen space
                 Vector2 currentDistance = touch1.screenPosition - touch0.screenPosition;
-                //find the magnitude (length) of this distance
+                //find the magnitude/length of this distance
                 float currentPinchDistance = currentDistance.magnitude;
 
                 //find the change in distance between the current pinch and the last pinch
                 float pinchDelta = currentPinchDistance - previousPinchDistance;
 
-                //check if an object is currently selected
+                //check if a cube object is currently selected
                 if (lastSelectedObject != null)
                 {
-                    //calculate the scaling factor based on the change in pinch distance (multiplied by a sensitivity value of 0.01)
-                    float scaleFactor = 1 + (pinchDelta * 0.01f);
+                    //calculate the scaling factor based on the change in pinch distance, multiplied by a sensitivity value of 0.01
+                    float scaleFactor = 1 + (pinchDelta * 0.01f); //0.01f tested as a good sensitivity value for smooth pinch scaling
                     //apply this scale factor to the selected object's size
                     lastSelectedObject.transform.localScale *= scaleFactor;
                 }
@@ -124,17 +126,19 @@ public class PlaceObject : MonoBehaviour
                 previousPinchDistance = currentPinchDistance;
             }
         }
-        //if neither one nor two fingers are touching the screen
+        //if neither 1 or 2 fingers are touching the screen
         else
         {
             //reset the previous distance for pinch calculations
             previousDistance = Vector2.zero;
+
+            isCubeSelected = false;
         }
     }
 
 
 
-    private void FingerDown(EnhancedTouch.Finger finger) //info to do with the finger press passed in
+    private void FingerDown(EnhancedTouch.Finger finger) //info to do with the finger press is passed in
     {
        
         if (finger.index != 0) //0 is the first in the index, so if using more than 1 finger
@@ -152,18 +156,13 @@ public class PlaceObject : MonoBehaviour
     {
 
         //similar to raycast functionity but optimised for AR, raycast takes in screen postion of where pressed,
-        //adds list of hits to list initialised earlier, what we want to detect against (in this case plane
-        //within polygon, as the plane object = polygon)
+        //adds list of hits to list initialised earlier, what we want to detect against, in this case plane
+        //within polygon, as the plane object = polygon
+
         //the other TrackableType possibilities: https://docs.unity3d.com/2018.3/Documentation/ScriptReference/Experimental.XR.TrackableType.html
 
-        if (isCubeSelected)  //check the flag here
-        {
-            isCubeSelected = false;  //reset the flag
-            return;
-        }
 
-        //perform a regular Physics.Raycast from camera to the hit position to check for other objects (cubes)
-        ////creates a ray from the camera through the point on the screen where the user touched
+        //define ray for a regular Physics.Raycast from AR camera to where the screen was touched, will be to check for other objects (cubes)
         Ray ray = arCamera.ScreenPointToRay(finger.currentTouch.screenPosition);
         //variable to store info about what the ray hits
         RaycastHit hitInfo;
