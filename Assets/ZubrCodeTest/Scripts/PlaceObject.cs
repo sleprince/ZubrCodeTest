@@ -71,8 +71,6 @@ public class PlaceObject : MonoBehaviour
                 //this is to only move the cube within the confines of AR planes
                 if (rayManager.Raycast(touch.screenPosition, hits, TrackableType.PlaneWithinPolygon))
                 {
-                    //display the name of the hit object in the debug text
-                    debugText.text = "Hit: " + hits[0];
                     //if a hit was found, take the position/pose of the first hit
                     Pose hitPose = hits[0].pose;
                     //moves the last selected cube to this new position while finger still not lifted off screen
@@ -98,14 +96,14 @@ public class PlaceObject : MonoBehaviour
             //check if this is the start of the pinch gesture by confirming no previous distance is recorded
             if (previousDistance == Vector2.zero)
             {
-                //calculate the distance between the two touches in screen space
+                //calculate the difference between the two touches in screen space
                 previousDistance = touch1.screenPosition - touch0.screenPosition;
                 //store the magnitude/length of this distance as the starting pinch distance
                 previousPinchDistance = previousDistance.magnitude;
             }
             else //it is not the start of the pinch gesture
             {
-                //calculate the current distance between the two touches in screen space
+                //calculate the current difference between the two touches in screen space
                 Vector2 currentDistance = touch1.screenPosition - touch0.screenPosition;
                 //find the magnitude/length of this distance
                 float currentPinchDistance = currentDistance.magnitude;
